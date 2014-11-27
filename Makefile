@@ -4,13 +4,13 @@ CFLAGS=-g -O2 -Wall -Wextra -Ilib -rdynamic -DNDEBUG $(OPTFLAGS)
 LIBS=-ldl $(OPTLIBS)
 PREFIX?=/usr/local
 
-LIB_SOURCES=$(wildcard lib/*.c)
+LIB_SOURCES=$(wildcard src/lib/*.c)
 OBJECTS=$(patsubst %.c,%.o,$(LIB_SOURCES))
 
-BIN_SOURCES=$(wildcard sockets/*.c)
+BIN_SOURCES=$(wildcard src/main/*.c)
 BINS=$(patsubst %.c,%,$(BIN_SOURCES))
 
-TARGET=build/libtlpi.a
+TARGET=build/libsrv.a
 
 # The Target Build
 all: clean $(TARGET) bin
