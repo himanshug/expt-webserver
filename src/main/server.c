@@ -5,17 +5,10 @@
 #include <sys/socket.h> //socket functions
 #include <netinet/in.h> //socket address structure
 
+#include "utils.h"
+
 #define PORT_NUM 4080
 #define BUFFER_SIZE 4096
-
-void die(char *msg) {
-    if(!errno) {
-        perror(msg);
-    } else {
-        printf("Error: %s\n", msg);
-    }
-    exit(1);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -35,11 +28,12 @@ int main(int argc, char *argv[]) {
     char buff[BUFFER_SIZE];
     for(;;) {
 
-        printf("Calling Accept\n");
+        printf("Waiting for new connections.\n");
         int cfd = accept(fd, NULL, NULL);
         if(cfd < 0) die("failed to accept connection");
 
         while(1) {
+            read_http_message(cfd);
             int len = read(cfd, buff, sizeof(buff));
             if(len > 0) printf(buff);
             else if(len == 0) {
