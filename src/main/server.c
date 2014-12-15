@@ -36,6 +36,17 @@ static void write_resp_to_fd(char *path, int fd) {
         fclose(tmp_fd);
     }
 }
+
+static void handle_request(int cfd) {
+    http_msg *msg = read_http_msg(cfd);
+
+    buff[0] = '\0';
+    strcat(buff,"/tmp/www");
+    strcat(buff,msg->path);
+    write_resp_to_fd(buff, cfd);
+    if(close(cfd) < 0) die(1,"failed to close conn");
+}
+
 int main(int argc, char *argv[]) {
 
     int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -57,12 +68,17 @@ int main(int argc, char *argv[]) {
         int cfd = accept(fd, NULL, NULL);
         if(cfd < 0) die(1,"failed to accept connection");
 
-        http_msg *msg = read_http_msg(cfd);
-
-        buff[0] = '\0';
-        strcat(buff,"/tmp/www");
-        strcat(buff,msg->path);
-        write_resp_to_fd(buff, cfd);
-        if(close(cfd) < 0) die(1,"failed to close conn");
+        switch(fork()) {
+        case -1:
+            die(2,"failed to fork");
+            break;
+        case 0: /* child process is executing the code in this case*/
+            close(fd); //listening socket does not have any business here
+            handle_request(cfd);
+            exit(0);
+        default: /* parent process here */
+            close(cfd); //connected socket does not have any business here
+            break;
+        }
     }
 }
