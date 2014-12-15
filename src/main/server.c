@@ -63,8 +63,6 @@ int main(int argc, char *argv[]) {
 
     if(listen(fd, 2) < 0) die(1,"couldn't make the server socket");
 
-    //read message and just print it
-
     for(;;) {
         printf("Waiting for new connections.\n");
         int cfd = accept(fd, NULL, NULL);
