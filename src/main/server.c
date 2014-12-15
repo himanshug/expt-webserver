@@ -1,6 +1,7 @@
 #include <errno.h> //errno
 #include <stdlib.h> //NULL
 #include <stdio.h> //perror
+#include <signal.h> //for signal handling
 
 #include <sys/socket.h> //socket functions
 #include <netinet/in.h> //socket address structure
@@ -49,7 +50,28 @@ static void handle_request(int cfd) {
     if(close(cfd) < 0) die(1,"failed to close conn");
 }
 
+/* SIGCHLD handler to reap zhombie children or
+ * else they will stay till this server process exits.
+ */
+static void reap_child_process(int sig) {
+    int old_errno;
+    old_errno = errno;
+    while(waitpid(-1, NULL, WNOHANG) > 0)
+        continue;
+
+    errno = old_errno;
+}
+
 int main(int argc, char *argv[]) {
+
+    //setup read_child_process as the signal handler for SIGCHLD
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sa.sa_handler = reap_child_process;
+    if(sigaction(SIGCHLD, &sa, NULL) == -1) {
+        die(3, "Failed to set SIGCHLD handler");
+    }
 
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if(fd < 0) die(1,"couldn't create socket");
