@@ -8,6 +8,8 @@
 #include "utils.h"
 #include "http.h"
 
+#define WWW_ROOT "/var/www"
+
 #define PORT_NUM 4080
 #define BUFFER_SIZE 4096
 
@@ -41,7 +43,7 @@ static void handle_request(int cfd) {
     http_msg *msg = read_http_msg(cfd);
 
     buff[0] = '\0';
-    strcat(buff,"/tmp/www");
+    strcat(buff,WWW_ROOT);
     strcat(buff,msg->path);
     write_resp_to_fd(buff, cfd);
     if(close(cfd) < 0) die(1,"failed to close conn");
